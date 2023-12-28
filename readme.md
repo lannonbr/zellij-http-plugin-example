@@ -1,0 +1,1 @@
+A sample Zellij plugin to try the HTTP request functionality. The expected result is when you press the Down arrow in the plugin pane, it will go fetch from an endpoint on my website to grab some titles of my blogposts.
