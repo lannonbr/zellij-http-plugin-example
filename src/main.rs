@@ -23,9 +23,7 @@ impl ZellijPlugin for State {
                     make_posts_web_request();
                 }
             }
-            Event::WebRequestResult(status_code, _headers, body, _context) => {
-                eprintln!("Status: {}", status_code);
-
+            Event::WebRequestResult(_status_code, _headers, body, _context) => {
                 match parse_data(body) {
                     Ok(data) => {
                         should_render = true;
@@ -39,9 +37,13 @@ impl ZellijPlugin for State {
 
         should_render
     }
+
     fn render(&mut self, _rows: usize, _cols: usize) {
         if !self.titles.is_empty() {
-            print_text(Text::new(self.titles.join("\n")));
+            for title in self.titles.iter() {
+                print_text(Text::new(title));
+                println!();
+            }
         } else {
             println!("Web request not made yet");
         }
@@ -54,13 +56,11 @@ fn parse_data(body: Vec<u8>) -> Result<Vec<String>, String> {
     String::from_utf8(body)
         .map_err(|e| e.to_string())
         .and_then(|b| json::parse(&b).map_err(|e| e.to_string()))
-        .and_then(|mut body| {
-            eprintln!("{}", body);
+        .and_then(|body| {
+            let items = &body["items"];
 
-            let items = body["items"].entries_mut().take(3);
-
-            for item in items {
-                vec.push(item.1["name"].to_string());
+            for item in items.members().take(3) {
+                vec.push(item["name"].to_string());
             }
 
             Ok(vec)
